@@ -1,0 +1,229 @@
+﻿@model IEnumerable<CoreInceleme.Models.Employee>
+@{
+	Layout = "_Layout";
+}
+
+@section Scripts{
+	<script>
+		$(document).ready(function () {
+			//GetDetailsByID
+			$(".btn-get-employee").on("click", function () {
+				var formData = new FormData();
+				var employeeid = $(this).attr("data-employeeid");
+				var url = '@Url.Action("GetDetailsByID","Employee")' + '/' + employeeid
+				$.ajax({
+					type: 'GET',
+					url: url,
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: function (response) {
+						if (response.responseCode == 0) {
+							var employee = JSON.parse(response.responseMessage);
+							$("#hdn-employee-id").val(employee.ID);
+							$("#Name").val(employee.Name);
+							$("#Department").val(employee.Department);
+							$("#City").val(employee.City);
+							$("#Salary").val(employee.Salary);
+						}
+						else {
+							bootbox.alert(response.responseMessage);
+						}
+					},
+					error: errorCallback
+				})
+			})
+
+			//Reflesh
+			$("#btn-reflesh-employee").on("click", function () {
+				var formData = new FormData();
+				$("#hdn-employee-id").val("");
+				$("#Name").val("");
+				$("#Department").val("");
+				$("#City").val("");
+				$("#Salary").val("");
+				$.ajax({
+					type: 'GET',
+					url: 'Employee/Reflesh',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+				});
+			})
+
+
+			//Add
+			$("#btn-insert-employee").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#id").val());
+				formData.append("Name", $("#Name").val());
+				formData.append("Department", $("#Department").val());
+				formData.append("City", $("#City").val());
+				formData.append("Salary", $("#Salary").val());
+				$.ajax({
+					type: 'POST',
+					url: 'Employee/Add',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+			//Update
+			$("#btn-update-employee").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#hdn-employee-id").val());
+				formData.append("Name", $("#Name").val());
+				formData.append("Department", $("#Department").val());
+				formData.append("City", $("#City").val());
+				formData.append("Salary", $("#Salary").val());
+				$.ajax({
+					type: 'PUT',
+					url: 'Employee/Update',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+			//Delete
+			$("#btn-delete-employee").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#hdn-employee-id").val());
+				$.ajax({
+					type: 'DELETE',
+					url: 'Employee/Delete',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+
+			//ErrorMesaage
+			function errorCallback() {
+				booybox.alert("Bir Hata Oluştu")
+			}
+
+			/*Reset Form*/
+			function resetForm() {
+				$("#hdn-employee-id").val("");
+				$("#Name").val("");
+				$("#Department").val("");
+				$("#City").val("");
+				$("#Salary").val("");
+			}
+
+			function successCallBack(response) {
+				if (response.responseCode == 0) {
+					resetForm();
+					bootbox.alert(response.responseMessage, function () {
+						//Herhangi bir operasyon olucaksa burada belirtebilirsiniz. Sayfa Yenilemek gibi vs.
+					})
+				}
+				else {
+					bootbox.alert(response.responseMessage)
+				}
+			}
+		})
+	</script>
+}
+
+<div class="row">
+	<div class="col-sm-12">
+		<form>
+			<input type="hidden" id="hdn-employee-id" />
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="Name" class="form-label">Çalışan Adı</label>
+					<input type="text" class="form-control" id="Name" placeholder="İsim Giriniz:" required />
+					<div class="invalid-feedback">İsim Zorunludur</div>
+				</div>
+
+				<div class="col-sm-6">
+					<label for="Departmanet" class="form-label">Departman</label>
+					<input type="text" class="form-control" id="Department" placeholder="Departman Giriniz:" required />
+					<div class="invalid-feedback">Departman Zorunludur</div>
+				</div>
+
+				<div class="col-sm-6">
+					<label for="City" class="form-label">Şehir</label>
+					<input type="text" class="form-control" id="City" placeholder="Şehir Giriniz:" required />
+					<div class="invalid-feedback">Şehir Zorunludur</div>
+				</div>
+
+				<div class="col-sm-6">
+					<label for="Salary" class="form-label">Maaş</label>
+					<input type="text" class="form-control" id="Salary" placeholder="Maaş Giriniz:" required />
+					<div class="invalid-feedback">Maaş Zorunludur</div>
+				</div>
+			</div>
+
+			<table class="table">
+				<tbody>
+					<tr>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-primary" id="btn-insert-employee">Kaydet</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-info" id="btn-update-employee">Güncelle</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-danger" id="btn-delete-employee">Sil</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-info" id="btn-reflesh-employee">Yenile</a>
+						</td>
+					</tr>
+				</tbody>
+
+			</table>
+		</form>
+	</div>
+</div>
+
+<div class="card-body">
+	<div class="table-responsive">
+		<table class="table table-bordered" width="100% cellpadding="0">
+			<thead>
+				<tr>
+					<th>Id</th>
+					<th>Çalışan Adı</th>
+					<th>Departmanı</th>
+					<th>Adresi</th>
+					<th>Maaşı</th>
+					<th>Operasyonlar</th>
+				</tr>
+			</thead>
+
+			<tbody id="employeeList">
+				@foreach (var employee in Model)
+				{
+					<tr>
+						<td>@employee.ID</td>
+						<td>@employee.Name</td>
+						<td>@employee.Department</td>
+						<td>@employee.City</td>
+						<td>@employee.Salary</td>
+						<td>
+							<a data-employeeid="@employee.ID" class="btn btn-success btn-get-employee">Çalışan Getir</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+

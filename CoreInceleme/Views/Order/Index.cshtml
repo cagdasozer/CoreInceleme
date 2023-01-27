@@ -1,0 +1,215 @@
+﻿@model IEnumerable<CoreInceleme.Models.Order>
+@{
+	Layout = "_Layout";
+}
+
+@section Scripts{
+	<script>
+		$(document).ready(function () {
+			//GetDetailsByID
+			$(".btn-get-order").on("click", function () {
+				var formData = new FormData();
+				var orderid = $(this).attr("data-orderid");
+				var url = '@Url.Action("GetDetailsByID","Order")' + '/' + orderid
+				$.ajax({
+					type: 'GET',
+					url: url,
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: function (response) {
+						if (response.responseCode == 0) {
+							var order = JSON.parse(response.responseMessage);
+							$("#customerName").val(order.CustomerName);
+							$("#customerSurname").val(order.CustomerSurname);
+							$("#customerAddress").val(order.CustomerAddress);
+							$("#hdn-order-id").val(order.ID);
+						}
+						else {
+							bootbox.alert(response.responseMessage);
+						}
+					},
+					error: errorCallback
+				})
+			})
+
+			//Reflesh
+			$("#btn-reflesh-order").on("click",function(){
+				debugger;
+				var formData = new FormData();
+				$("#hdn-order-id").val("");
+				$("#customerName").val("");
+				$("#customerSurname").val("");
+				$("#customerAddress").val("");
+				$.ajax({
+					type:'GET',
+					url:'Order/Reflesh',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+				});
+			})
+			
+			//Add
+			$("#btn-insert-order").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#id").val());
+				formData.append("customerName", $("#customerName").val());
+				formData.append("customerSurname", $("#customerSurname").val());
+				formData.append("customerAddress", $("#customerAddress").val());
+				$.ajax({
+					type: 'POST',
+					url: 'Order/Add',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+			//Update
+			$("#btn-update-order").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#hdn-order-id").val());
+				formData.append("customerName", $("#customerName").val());
+				formData.append("customerSurname", $("#customerSurname").val());
+				formData.append("customerAddress", $("#customerAddress").val());
+				$.ajax({
+					type: 'PUT',
+					url: 'Order/Update',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+			//Delete
+			$("#btn-delete-order").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#hdn-order-id").val());
+				$.ajax({
+					type: 'DELETE',
+					url: 'Order/Delete',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+
+			//ErrorMesaage
+			function errorCallback() {
+				booybox.alert("Bir Hata Oluştu")
+			}
+
+			/*Reset Form*/
+			function resetForm() {
+				$("#hdn-order-id").val("");
+				$("#customerName").val("");
+				$("#customerSurname").val("");
+				$("#customerAddress").val("");
+			}
+
+			function successCallBack(response) {
+				if (response.responseCode == 0) {
+					resetForm();
+					bootbox.alert(response.responseMessage, function () {
+						//Herhangi bir operasyon olucaksa burada belirtebilirsiniz. Sayfa Yenilemek gibi vs.
+					})
+				}
+				else {
+					bootbox.alert(response.responseMessage)
+				}
+			}
+		})
+	</script>
+}
+
+<div class="row">
+	<div class="col-sm-12">
+		<form>
+			<input type="hidden" id="hdn-order-id" />
+			<div class="row">
+				<div class="col-sm-4">
+					<label for="customerName" class="form-label">Müşteri Adı</label>
+					<input type="text" class="form-control" id="customerName" placeholder="Müşteri Adı Giriniz" required />
+					<div class="invalid-feedback">İsim Zorunludur</div>
+				</div>
+
+				<div class="col-sm-4">
+					<label for="customerSurname" class="form-label">Müşteri Soyadı</label>
+					<input type="text" class="form-control" id="customerSurname" placeholder="Müşteri Soyadı Giriniz" required />
+					<div class="invalid-feedback">Soyisim Zorunludur</div>
+				</div>
+
+				<div class="col-sm-4">
+					<label for="customerAddress" class="form-label">Adres</label>
+					<input type="text" class="form-control" id="customerAddress" placeholder="Adress Giriniz" required />
+					<div class="invalid-feedback">Adres Zorunludur</div>
+				</div>
+			</div>
+
+			<table class="table">
+				<tbody>
+					<tr>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-primary" id="btn-insert-order">Kaydet</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-info" id="btn-update-order">Güncelle</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-danger" id="btn-delete-order">Sil</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-info" id="btn-reflesh-order">Yenile</a>
+						</td>
+					</tr>
+				</tbody>
+
+			</table>
+		</form>
+	</div>
+</div>
+
+<div class="card-body">
+	<div class="table-responsive">
+		<table class="table table-bordered" width="100% cellpadding="0">
+			<thead>
+				<tr>
+					<th>Id</th>
+					<th>Müşteri Adı</th>
+					<th>Müşteri Soyadı</th>
+					<th>Müşteri Adresi</th>
+					<th>Operasyonlar</th>
+				</tr>
+			</thead>
+
+			<tbody id="orderList">
+				@foreach (var order in Model)
+				{
+					<tr>
+						<td>@order.ID</td>
+						<td>@order.CustomerName</td>
+						<td>@order.CustomerSurname</td>
+						<td>@order.CustomerAddress</td>
+						<td>
+							<a data-orderid="@order.ID" class="btn btn-success btn-get-order">Sipariş Getir</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>

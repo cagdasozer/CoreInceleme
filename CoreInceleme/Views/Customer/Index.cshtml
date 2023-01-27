@@ -1,0 +1,230 @@
+﻿@model IEnumerable<CoreInceleme.Models.Customer>
+@{
+	Layout = "_Layout";
+}
+
+@section Scripts{
+	<script>
+		$(document).ready(function () {
+			//GetByID
+			$(".btn-get-customer").on("click", function () {
+				var formData = new FormData();
+				var customerid = $(this).attr("data-customerid");
+				var url = '@Url.Action("GetDetailsByID","Customer")' + '/' + customerid;
+				$.ajax({
+					type: 'GET',
+					url: url,
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: function (response) {
+						if (response.responseCode == 0) {
+							var customer = JSON.parse(response.responseMessage);
+							$("#name").val(customer.Name);
+							$("#surname").val(customer.Surname);
+							$("#country").val(customer.Country);
+							$("#phoneNumber").val(customer.PhoneNumber);
+							$("#hdn-customer-id").val(customer.ID);
+						}
+						else {
+							bootbox.alert(response.responseMessage);
+						}
+					},
+					error: errorCallback
+				})
+			})
+
+			//Reflesh
+			$("#btn-reflesh-customer").on("click", function () {
+				debugger;
+				var formData = new FormData();
+				$("#hdn-customer-id").val("");
+				$("#name").val("");
+				$("#surname").val("");
+				$("#country").val("");
+				$("#phoneNumber").val("");
+				$.ajax({
+					type: 'GET',
+					url: 'Customer/Reflesh',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+				});
+			})
+
+			//Add
+			$("#btn-insert-customer").on("click", function () {
+				var formData = new FormData();
+				formData.append("name", $("#name").val());
+				formData.append("surname", $("#surname").val());
+				formData.append("country", $("#country").val());
+				formData.append("phoneNumber", $("#phoneNumber").val());
+				$.ajax({
+					type: 'POST',
+					url: 'Customer/Add',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+			//Update
+			$("#btn-update-customer").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#hdn-customer-id").val());
+				formData.append("name", $("#name").val());
+				formData.append("surname", $("#surname").val());
+				formData.append("country", $("#country").val());
+				formData.append("phoneNumber", $("#phoneNumber").val());
+				$.ajax({
+					type: 'PUT',
+					url: 'Customer/Update',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+
+			//Delete
+			$("#btn-delete-customer").on("click", function () {
+				var formData = new FormData();
+				formData.append("id", $("#hdn-customer-id").val());
+				$.ajax({
+					type: 'DELETE',
+					url: 'Customer/Delete',
+					contentType: false,
+					processData: false,
+					cache: false,
+					data: formData,
+					success: successCallBack,
+					error: errorCallback
+				});
+			});
+
+			//ErrorMesaage
+			function errorCallback() {
+				booybox.alert("Bir Hata Oluştu")
+			}
+
+			/*Reset Form*/
+			function resetForm() {
+				$("#hdn-customer-id").val("");
+				$("#name").val("");
+				$("#surname").val("");
+				$("#country").val("");
+				$("#phoneNumber").val("");
+			}
+
+			function successCallBack(response) {
+				if (response.responseCode == 0) {
+					resetForm();
+					bootbox.alert(response.responseMessage, function () {
+						//Herhangi bir operasyon olucaksa burada belirtebilirsiniz. Sayfa Yenilemek gibi vs.
+					})
+				}
+				else {
+					bootbox.alert(response.responseMessage)
+				}
+			}
+		})
+	</script>
+}
+
+<div class="row">
+	<div class="col-sm-12">
+		<form>
+			<input type="hidden" id="hdn-customer-id" />
+			<div class="row">
+				<div class="col-sm-6">
+					<label for="name" class="form-label">Name</label>
+					<input type="text" class="form-control" id="name" placeholder="İsim Giriniz" />
+					<div class="invalid-feedback">İsim Zorunludur</div>
+				</div>
+
+				<div class="col-sm-6">
+					<label for="surname" class="form-label">Surname</label>
+					<input type="text" class="form-control" id="surname" placeholder="Soyisim Giriniz" />
+					<div class="invalid-feedback">Soyisim Zorunludur</div>
+				</div>
+
+				<div class="col-sm-6">
+					<label for="country" class="form-label">Country</label>
+					<input type="text" class="form-control" id="country" placeholder="Ülke Giriniz" />
+					<div class="invalid-feedback">Ülke Zorunludur</div>
+				</div>
+
+				<div class="col-sm-6">
+					<label for="phoneNumber" class="form-label">Phone Number</label>
+					<input type="text" class="form-control" id="phoneNumber" placeholder="Telefon Giriniz" />
+					<div class="invalid-feedback">Telefon Zorunludur</div>
+				</div>
+			</div>
+
+			<table class="table">
+				<tbody>
+					<tr>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-primary" id="btn-insert-customer">Kaydet</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-info" id="btn-update-customer">Güncelle</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-danger" id="btn-delete-customer">Sil</a>
+						</td>
+						<td>
+							<a href="javascript:void(0)" class="btn btn-info" id="btn-reflesh-customer">Yenile</a>
+						</td>
+					</tr>
+				</tbody>
+
+			</table>
+		</form>
+	</div>
+</div>
+
+<div class="card-body">
+	<div class="table-responsive">
+		<table class="table table-bordered" width="100% cellpadding="0">
+			<thead>
+				<tr>
+					<th>Id</th>
+					<th>Adi</th>
+					<th>Soyadi</th>
+					<th>Ulke</th>
+					<th>Telefon</th>
+					<th>Operasyonlar</th>
+				</tr>
+			</thead>
+
+			<tbody id="customerList">
+				@foreach (var customer in Model)
+				{
+					<tr>
+						<td>@customer.ID</td>
+						<td>@customer.Name</td>
+						<td>@customer.Surname</td>
+						<td>@customer.Country</td>
+						<td>@customer.PhoneNumber</td>
+						<td>
+							<a data-customerid="@customer.ID" class="btn btn-success btn-get-customer">Müşteri Getir</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+
